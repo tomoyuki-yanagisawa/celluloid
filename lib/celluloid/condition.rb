@@ -17,7 +17,7 @@ module Celluloid
       def wait
         begin
           message = @mailbox.receive(@timeout) do |msg|
-            msg.is_a?(SignalConditionRequest) && msg.task == Thread.current
+            msg.is_a?(SignalConditionRequest) && msg.task == Thread
           end
         rescue TimedOut
           raise ConditionError, "timeout after #{@timeout.inspect} seconds"
@@ -36,7 +36,7 @@ module Celluloid
     def wait(timeout = nil)
       fail ConditionError, "cannot wait for signals while exclusive" if Celluloid.exclusive?
 
-      if actor = Thread.current[:celluloid_actor]
+      if actor = Thread[:celluloid_actor]
         task = Task.current
         if timeout
           bt = caller
@@ -47,7 +47,7 @@ module Celluloid
           end
         end
       else
-        task = Thread.current
+        task = Thread
       end
       waiter = Waiter.new(self, task, Celluloid.mailbox, timeout)
 

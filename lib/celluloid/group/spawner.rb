@@ -45,17 +45,17 @@ module Celluloid
 
       def instantiate(proc)
         thread = Thread.new do
-          Thread.current[:celluloid_thread_state] = :running
+          Thread[:celluloid_thread_state] = :running
           begin
             proc.call
           rescue ::Exception => ex
             Internals::Logger.crash("thread crashed", ex)
-            Thread.current[:celluloid_thread_state] = :error
+            Thread[:celluloid_thread_state] = :error
           ensure
-            unless Thread.current[:celluloid_thread_state] == :error
-              Thread.current[:celluloid_thread_state] = :finished
+            unless Thread[:celluloid_thread_state] == :error
+              Thread[:celluloid_thread_state] = :finished
             end
-            @mutex.synchronize { @group.delete Thread.current }
+            @mutex.synchronize { @group.delete Thread }
             Thread.exit
           end
         end

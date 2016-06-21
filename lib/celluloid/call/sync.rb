@@ -4,7 +4,7 @@ module Celluloid
     class Sync < Call
       attr_reader :sender, :task, :chain_id
 
-      def initialize(sender, method, arguments = [], block = nil, task = Thread.current[:celluloid_task], chain_id = Internals::CallChain.current_id)
+      def initialize(sender, method, arguments = [], block = nil, task = Thread[:celluloid_task], chain_id = Internals::CallChain.current_id)
         super(method, arguments, block)
         @sender   = sender
         @task     = task
@@ -52,7 +52,7 @@ module Celluloid
           end
 
           if message.is_a?(SystemEvent)
-            Thread.current[:celluloid_actor].handle_system_event(message)
+            Thread[:celluloid_actor].handle_system_event(message)
           else
             # FIXME: add check for receiver block execution
             if message.respond_to?(:value)

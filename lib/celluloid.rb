@@ -33,9 +33,9 @@ module Celluloid
 
     def actor_system
       if Thread.current.celluloid?
-        Thread.current[:celluloid_actor_system] || fail(Error, "actor system not running")
+        Thread[:celluloid_actor_system] || fail(Error, "actor system not running")
       else
-        Thread.current[:celluloid_actor_system] || @actor_system || fail(Error, "Celluloid is not yet started; use Celluloid.boot")
+        Thread[:celluloid_actor_system] || @actor_system || fail(Error, "Celluloid is not yet started; use Celluloid.boot")
       end
     end
 
@@ -79,12 +79,12 @@ module Celluloid
 
     # Are we currently inside of an actor?
     def actor?
-      !!Thread.current[:celluloid_actor]
+      !!Thread[:celluloid_actor]
     end
 
     # Retrieve the mailbox for the current thread or lazily initialize it
     def mailbox
-      Thread.current[:celluloid_mailbox] ||= Celluloid::Mailbox.new
+      Thread[:celluloid_mailbox] ||= Celluloid::Mailbox.new
     end
 
     # Generate a Universally Unique Identifier
@@ -117,10 +117,10 @@ module Celluloid
 
     # Detect if a particular call is recursing through multiple actors
     def detect_recursion
-      actor = Thread.current[:celluloid_actor]
+      actor = Thread[:celluloid_actor]
       return unless actor
 
-      task = Thread.current[:celluloid_task]
+      task = Thread[:celluloid_task]
       return unless task
 
       chain_id = Internals::CallChain.current_id
@@ -133,7 +133,7 @@ module Celluloid
     end
 
     def suspend(status, waiter)
-      task = Thread.current[:celluloid_task]
+      task = Thread[:celluloid_task]
       if task && !Celluloid.exclusive?
         waiter.before_suspend(task) if waiter.respond_to?(:before_suspend)
         Task.suspend(status)
@@ -257,7 +257,7 @@ module Celluloid
 
     # Are we being invoked in a different thread from our owner?
     def leaked?
-      @celluloid_owner != Thread.current[:celluloid_actor]
+      @celluloid_owner != Thread[:celluloid_actor]
     end
 
     def tap
@@ -315,17 +315,17 @@ module Celluloid
 
   # Terminate this actor
   def terminate
-    Thread.current[:celluloid_actor].behavior_proxy.terminate!
+    Thread[:celluloid_actor].behavior_proxy.terminate!
   end
 
   # Send a signal with the given name to all waiting methods
   def signal(name, value = nil)
-    Thread.current[:celluloid_actor].signal name, value
+    Thread[:celluloid_actor].signal name, value
   end
 
   # Wait for the given signal
   def wait(name)
-    Thread.current[:celluloid_actor].wait name
+    Thread[:celluloid_actor].wait name
   end
 
   # Obtain the current_actor
@@ -340,12 +340,12 @@ module Celluloid
 
   # Obtain the running tasks for this actor
   def tasks
-    Thread.current[:celluloid_actor].tasks.to_a
+    Thread[:celluloid_actor].tasks.to_a
   end
 
   # Obtain the Celluloid::Links for this actor
   def links
-    Thread.current[:celluloid_actor].links
+    Thread[:celluloid_actor].links
   end
 
   # Watch for exit events from another actor
@@ -380,7 +380,7 @@ module Celluloid
 
   # Receive an asynchronous message via the actor protocol
   def receive(timeout = nil, &block)
-    actor = Thread.current[:celluloid_actor]
+    actor = Thread[:celluloid_actor]
     if actor
       actor.receive(timeout, &block)
     else
@@ -390,7 +390,7 @@ module Celluloid
 
   # Sleep letting the actor continue processing messages
   def sleep(interval)
-    actor = Thread.current[:celluloid_actor]
+    actor = Thread[:celluloid_actor]
     if actor
       actor.sleep(interval)
     else
@@ -400,7 +400,7 @@ module Celluloid
 
   # Timeout on task suspension (eg Sync calls to other actors)
   def timeout(duration)
-    Thread.current[:celluloid_actor].timeout(duration) do
+    Thread[:celluloid_actor].timeout(duration) do
       yield
     end
   end
@@ -408,23 +408,23 @@ module Celluloid
   # Run given block in an exclusive mode: all synchronous calls block the whole
   # actor, not only current message processing.
   def exclusive(&block)
-    Thread.current[:celluloid_task].exclusive(&block)
+    Thread[:celluloid_task].exclusive(&block)
   end
 
   # Are we currently exclusive
   def exclusive?
-    task = Thread.current[:celluloid_task]
+    task = Thread[:celluloid_task]
     task && task.exclusive?
   end
 
   # Call a block after a given interval, returning a Celluloid::Timer object
   def after(interval, &block)
-    Thread.current[:celluloid_actor].after(interval, &block)
+    Thread[:celluloid_actor].after(interval, &block)
   end
 
   # Call a block every given interval, returning a Celluloid::Timer object
   def every(interval, &block)
-    Thread.current[:celluloid_actor].every(interval, &block)
+    Thread[:celluloid_actor].every(interval, &block)
   end
 
   # Perform a blocking or computationally intensive action inside an
@@ -438,12 +438,12 @@ module Celluloid
 
   # Handle async calls within an actor itself
   def async(meth = nil, *args, &block)
-    Thread.current[:celluloid_actor].behavior_proxy.async meth, *args, &block
+    Thread[:celluloid_actor].behavior_proxy.async meth, *args, &block
   end
 
   # Handle calls to future within an actor itself
   def future(meth = nil, *args, &block)
-    Thread.current[:celluloid_actor].behavior_proxy.future meth, *args, &block
+    Thread[:celluloid_actor].behavior_proxy.future meth, *args, &block
   end
 end
 

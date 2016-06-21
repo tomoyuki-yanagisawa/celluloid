@@ -1,7 +1,7 @@
 # A proxy which sends asynchronous calls to an actor
 class Celluloid::Proxy::Async < Celluloid::Proxy::AbstractCall
   def method_missing(meth, *args, &block)
-    if @mailbox == ::Thread.current[:celluloid_mailbox]
+    if @mailbox == ::Thread[:celluloid_mailbox]
       args.unshift meth
       meth = :__send__
     end

@@ -9,10 +9,10 @@ class Celluloid::Proxy::Sync < Celluloid::Proxy::AbstractCall
       fail ::Celluloid::DeadActorError, "attempted to call a dead actor: #{meth}"
     end
 
-    if @mailbox == ::Thread.current[:celluloid_mailbox]
+    if @mailbox == ::Celluloid::Thread[:celluloid_mailbox]
       args.unshift meth
       meth = :__send__
-      # actor = Thread.current[:celluloid_actor]
+      # actor = Thread[:celluloid_actor]
       # actor = actor.behavior.subject.bare_object
       # return actor.__send__(*args, &block)
     end

@@ -34,9 +34,9 @@ RSpec.shared_examples "a Celluloid Actor" do
 
   it "can be stored in hashes even when dead" do
     actor.terminate
-    
+
     expect(actor.dead?).to be_truthy
-    
+
     expect(actor.hash).not_to eq(Kernel.hash)
     expect(actor.object_id).not_to eq(Kernel.object_id)
     expect(actor.eql? actor).to be_truthy
@@ -334,11 +334,11 @@ RSpec.shared_examples "a Celluloid Actor" do
           include CelluloidSpecs.included_module
 
           def current_java_thread
-            Thread.current.to_java.getNativeThread
+            Thread.to_java.getNativeThread
           end
 
           def name_inside_task
-            Thread.current.to_java.getNativeThread.get_name
+            Thread.to_java.getNativeThread.get_name
           end
         end.new
       end

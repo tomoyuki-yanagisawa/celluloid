@@ -1,7 +1,7 @@
 module Celluloid
   class Call
     class Block
-      def initialize(block_proxy, sender, arguments, task = Thread.current[:celluloid_task])
+      def initialize(block_proxy, sender, arguments, task = Thread[:celluloid_task])
         @block_proxy = block_proxy
         @sender = sender
         @arguments = arguments

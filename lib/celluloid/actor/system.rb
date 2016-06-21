@@ -65,16 +65,16 @@ module Celluloid
       end
 
       def within
-        old = Thread.current[:celluloid_actor_system]
-        Thread.current[:celluloid_actor_system] = self
+        old = Thread[:celluloid_actor_system]
+        Thread[:celluloid_actor_system] = self
         yield
       ensure
-        Thread.current[:celluloid_actor_system] = old
+        Thread[:celluloid_actor_system] = old
       end
 
       def get_thread
         @group.get do
-          Thread.current[:celluloid_actor_system] = self
+          Thread[:celluloid_actor_system] = self
           yield
         end
       end

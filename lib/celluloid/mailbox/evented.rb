@@ -29,7 +29,7 @@ module Celluloid
           @mutex.unlock rescue nil
         end
         begin
-          current_actor = Thread.current[:celluloid_actor]
+          current_actor = Thread[:celluloid_actor]
           @reactor.wakeup unless current_actor && current_actor.mailbox == self
         rescue
           Internals::Logger.crash "reactor crashed", $ERROR_INFO

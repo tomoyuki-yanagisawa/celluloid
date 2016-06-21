@@ -15,14 +15,14 @@ module Celluloid
 
       # Obtain the current actor
       def current
-        actor = Thread.current[:celluloid_actor]
+        actor = Thread[:celluloid_actor]
         fail NotActorError, "not in actor scope" unless actor
         actor.behavior_proxy
       end
 
       # Obtain the name of the current actor
       def registered_name
-        actor = Thread.current[:celluloid_actor]
+        actor = Thread[:celluloid_actor]
         fail NotActorError, "not in actor scope" unless actor
         actor.name
       end
@@ -53,25 +53,25 @@ module Celluloid
       # Watch for exit events from another actor
       def monitor(actor)
         fail NotActorError, "can't link outside actor context" unless Celluloid.actor?
-        Thread.current[:celluloid_actor].linking_request(actor, :link)
+        Thread[:celluloid_actor].linking_request(actor, :link)
       end
 
       # Stop waiting for exit events from another actor
       def unmonitor(actor)
         fail NotActorError, "can't link outside actor context" unless Celluloid.actor?
-        Thread.current[:celluloid_actor].linking_request(actor, :unlink)
+        Thread[:celluloid_actor].linking_request(actor, :unlink)
       end
 
       # Link to another actor
       def link(actor)
         monitor actor
-        Thread.current[:celluloid_actor].links << actor
+        Thread[:celluloid_actor].links << actor
       end
 
       # Unlink from another actor
       def unlink(actor)
         unmonitor actor
-        Thread.current[:celluloid_actor].links.delete actor
+        Thread[:celluloid_actor].links.delete actor
       end
 
       # Are we monitoring the given actor?
@@ -81,7 +81,7 @@ module Celluloid
 
       # Are we bidirectionally linked to the given actor?
       def linked_to?(actor)
-        monitoring?(actor) && Thread.current[:celluloid_actor].links.include?(actor)
+        monitoring?(actor) && Thread[:celluloid_actor].links.include?(actor)
       end
 
       unless RUBY_PLATFORM == "java" || RUBY_ENGINE == "rbx"
@@ -141,8 +141,8 @@ module Celluloid
     end
 
     def setup_thread
-      Thread.current[:celluloid_actor]   = self
-      Thread.current[:celluloid_mailbox] = @mailbox
+      Thread[:celluloid_actor]   = self
+      Thread[:celluloid_mailbox] = @mailbox
     end
 
     # Run the actor loop
@@ -218,7 +218,7 @@ module Celluloid
     def wait(name)
       @signals.wait name
     end
-    
+
     # Register a new handler for a given pattern
     def handle(*patterns, &block)
       @handlers.handle(*patterns, &block)
@@ -306,8 +306,8 @@ module Celluloid
       @behavior.shutdown
       cleanup exit_event
     ensure
-      Thread.current[:celluloid_actor]   = nil
-      Thread.current[:celluloid_mailbox] = nil
+      Thread[:celluloid_actor]   = nil
+      Thread[:celluloid_mailbox] = nil
     end
 
     # Clean up after this actor

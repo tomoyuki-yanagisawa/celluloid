@@ -5,6 +5,20 @@ module Celluloid
     def celluloid?
       true
     end
+    
+    #de DEPRECATE: Remove second behavior set, for before 2.3.1 compatibility:
+    class << self
+      if Thread.method_defined? :thread_variable_get
+        def [](k)
+          print "&"
+          Thread.current.thread_variable_get(k)
+        end
+        def []=(k,v)
+          print "%"
+          Thread.current.thread_variable_set(k,v)
+        end
+      end
+    end
 
     attr_accessor :busy
 

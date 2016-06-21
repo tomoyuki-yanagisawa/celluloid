@@ -15,7 +15,7 @@ module Celluloid
 
       def create
         # TODO: move this to ActorSystem#get_thread (ThreadHandle inside Group::Pool)
-        thread = Internals::ThreadHandle.new(Thread.current[:celluloid_actor_system], :task) do
+        thread = Internals::ThreadHandle.new(Thread[:celluloid_actor_system], :task) do
           begin
             ex = @resume_queue.pop
             fail ex if ex.is_a?(TaskTerminated)

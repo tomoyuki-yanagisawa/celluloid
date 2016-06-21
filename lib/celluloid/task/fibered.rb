@@ -1,21 +1,34 @@
 module Celluloid
+
+  #de TODO: Take advantage of the rbx-3.40+ implementation of Fibers
+  #de       just make Thread#[] and #[]= aliases for thread_local_get and _set respectively
+  #de       ...create this alias if method_defined? on Thread has thread_local_get
+
   class Task
     # Tasks with a Fiber backend
     class Fibered < Task
       class StackError < Celluloid::Error; end
-      def create
-        queue = Thread.current[:celluloid_queue]
-        actor_system = Thread.current[:celluloid_actor_system]
-        @fiber = Fiber.new do
-          # FIXME: cannot use the writer as specs run inside normal Threads
-          Thread.current[:celluloid_role] = :actor
-          Thread.current[:celluloid_queue] = queue
-          Thread.current[:celluloid_actor_system] = actor_system
-          yield
-          # TODO: Determine why infinite thread leakage happens under jRuby, if `Fiber.yield` is used:
-          #de Fiber.yield unless RUBY_PLATFORM == "java"
+      #de DEPRECATE: Once 2.3.* support is the threshold, this can be only the first case.
+      #de if Thread.method_defined? :thread_variable_get
+        def create
+          @fiber = Fiber.new do
+            Thread[:celluloid_role] = :actor
+            yield
+          end
         end
-      end
+      #de else
+      #de   def create
+      #de     queue = Thread[:celluloid_queue]
+      #de     actor_system = Thread[:celluloid_actor_system]
+      #de     @fiber = Fiber.new do
+      #de       # FIXME: cannot use the writer as specs run inside normal Threads
+      #de       Thread[:celluloid_role] = :actor
+      #de       Thread[:celluloid_queue] = queue
+      #de       Thread[:celluloid_actor_system] = actor_system
+      #de       yield
+      #de     end
+      #de   end
+      #de end
 
       def signal
         Fiber.yield

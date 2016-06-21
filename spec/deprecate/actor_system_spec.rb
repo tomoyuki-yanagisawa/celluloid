@@ -20,7 +20,7 @@ RSpec.describe "Deprecated Celluloid::ActorSystem" do
   it "support getting threads" do
     subject.start
     queue = Queue.new
-    thread = subject.get_thread do
+    subject.get_thread do
       expect(Celluloid.actor_system).to eq(subject)
       queue << nil
     end

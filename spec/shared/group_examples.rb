@@ -58,7 +58,7 @@ RSpec.shared_examples "a Celluloid Group" do
   context "when a thread has local variables" do
     before do
       @thread = subject.get do
-        Thread.current[:foo] = :bar
+        Celluloid::Thread[:foo] = :bar
         queue.pop
       end
 

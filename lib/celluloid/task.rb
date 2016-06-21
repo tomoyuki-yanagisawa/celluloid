@@ -3,7 +3,7 @@ module Celluloid
   class Task
     # Obtain the current task
     def self.current
-      Thread.current[:celluloid_task] || fail(NotTaskError, "not within a task context")
+      Thread[:celluloid_task] || fail(NotTaskError, "not within a task context")
     end
 
     # Suspend the running task, deferring to the scheduler
@@ -24,11 +24,11 @@ module Celluloid
       @dangerous_suspend = @meta ? @meta.dup.delete(:dangerous_suspend) : false
       @guard_warnings    = false
 
-      actor     = Thread.current[:celluloid_actor]
+      actor     = Thread[:celluloid_actor]
       @chain_id = Internals::CallChain.current_id
 
       fail NotActorError, "can't create tasks outside of actors" unless actor
-      guard "can't create tasks inside of tasks" if Thread.current[:celluloid_task]
+      guard "can't create tasks inside of tasks" if Thread[:celluloid_task]
 
       create do
         begin
@@ -37,7 +37,7 @@ module Celluloid
 
           name_current_thread thread_metadata
 
-          Thread.current[:celluloid_task] = self
+          Thread[:celluloid_task] = self
           Internals::CallChain.current_id = @chain_id
 
           actor.tasks << self
@@ -78,7 +78,7 @@ module Celluloid
 
     # Resume a suspended task, giving it a value to return if needed
     def resume(value = nil)
-      guard "Cannot resume a task from inside of a task" if Thread.current[:celluloid_task]
+      guard "Cannot resume a task from inside of a task" if Thread[:celluloid_task]
       if running?
         deliver(value)
       else
@@ -151,17 +151,17 @@ module Celluloid
     def name_current_thread(new_name)
       return unless RUBY_PLATFORM == "java"
       if new_name.nil?
-        new_name = Thread.current[:celluloid_original_thread_name]
-        Thread.current[:celluloid_original_thread_name] = nil
+        new_name = Thread[:celluloid_original_thread_name]
+        Thread[:celluloid_original_thread_name] = nil
       else
-        Thread.current[:celluloid_original_thread_name] = Thread.current.to_java.getNativeThread.get_name
+        Thread[:celluloid_original_thread_name] = Thread.to_java.getNativeThread.get_name
       end
-      Thread.current.to_java.getNativeThread.set_name(new_name)
+      Thread.to_java.getNativeThread.set_name(new_name)
     end
 
     def thread_metadata
       method = @meta && @meta[:method_name] || "<no method>"
-      klass = Thread.current[:celluloid_actor] && Thread.current[:celluloid_actor].behavior.subject.bare_object.class || "<no actor>"
+      klass = Thread[:celluloid_actor] && Thread[:celluloid_actor].behavior.subject.bare_object.class || "<no actor>"
       format("[Celluloid] %s#%s", klass, method)
     end
   end
